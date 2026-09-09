@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LANDAK FB SLUG</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#070b12;color:#a9b7bf;font:12px Arial,sans-serif}
+.box{width:min(520px,92%);margin:35px auto;background:#0b121c;border:1px solid #193449;border-radius:14px;padding:22px}
+h2{color:#00eaff;font-size:17px;margin:0 0 6px}.sub{color:#506977;font-size:10px;margin-bottom:20px}
+label{display:block;color:#5d7886;font-size:10px;margin:13px 0 6px}
+input,textarea{width:100%;padding:11px;background:#070d15;border:1px solid #193449;color:#fff;border-radius:5px;outline:none}
+textarea{min-height:70px;resize:vertical}
+button{width:100%;padding:12px;margin-top:17px;background:#00eaff;color:#03151a;border:0;border-radius:5px;font-weight:bold;cursor:pointer}
+.result{display:none;margin-top:18px;padding:13px;border:1px dashed #24506a;color:#00eaff;word-break:break-all}
+.preview{margin-top:15px;border:1px solid #193449;border-radius:6px;overflow:hidden;background:#080e16}
+.preview img{display:none;width:100%;max-height:180px;object-fit:cover}.ptext{padding:12px}.ptitle{color:#fff;font-weight:bold}.pdesc{color:#687c87;font-size:10px;margin-top:5px}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>⚡ LANDAK FB SLUG</h2>
+<div class="sub">Buat URL dengan Facebook Open Graph metadata</div>
+
+<label>URL TUJUAN</label>
+<input id="destination" placeholder="https://website-anda.com/halaman">
+
+<label>SLUG / ID</label>
+<input id="slug" placeholder="FRST">
+
+<label>JUDUL FACEBOOK</label>
+<input id="title" placeholder="Judul yang tampil di Facebook">
+
+<label>GAMBAR FACEBOOK</label>
+<input id="image" placeholder="https://website-anda.com/image.jpg">
+
+<label>DESKRIPSI FACEBOOK</label>
+<textarea id="description" placeholder="Deskripsi link..."></textarea>
+
+<button onclick="createSlug()">⚡ BUAT SLUG</button>
+
+<div id="result" class="result"></div>
+
+<div class="preview">
+  <img id="img">
+  <div class="ptext">
+    <div class="ptitle" id="ptitle">Preview Facebook</div>
+    <div class="pdesc" id="pdesc">Judul dan deskripsi akan muncul di sini.</div>
+  </div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+['title','description','image'].forEach(id=>$(id).addEventListener('input',preview));
+function preview(){
+ $('ptitle').textContent=$('title').value||'Preview Facebook';
+ $('pdesc').textContent=$('description').value||'Judul dan deskripsi akan muncul di sini.';
+ if($('image').value){
+   $('img').src=$('image').value;$('img').style.display='block';
+   $('img').onerror=()=>{$('img').style.display='none'};
+ }else $('img').style.display='none';
+}
+async function createSlug(){
+ const destination=$('destination').value.trim();
+ const slug=$('slug').value.trim();
+ const result=$('result');
+ if(!/^https?:\/\//i.test(destination)) return alert('URL tujuan harus http:// atau https://');
+ if(!slug) return alert('Slug wajib diisi');
+ result.style.display='block';result.textContent='Membuat slug...';
+ try{
+  const r=await fetch('/api/create',{method:'POST',headers:{'content-type':'application/json'},
+   body:JSON.stringify({destination,slug,title:$('title').value,image:$('image').value,description:$('description').value})});
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error||'Gagal');
+  result.innerHTML='URL SLUG:<br><br><b>'+d.url+'</b>';
+ }catch(e){result.textContent=e.message}
+}
+preview();
+</script>
+</body>
+</html>
